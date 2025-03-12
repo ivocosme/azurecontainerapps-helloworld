@@ -1,0 +1,44 @@
+name: Trigger auto deployment for demo-lly-acaws-ca-cd
+
+# When this action will be executed
+on:
+  # Automatically trigger it when detected changes in repo
+  push:
+    branches: 
+      [ main ]
+    paths:
+    - '**'
+    - '.github/workflows/demo-lly-acaws-ca-cd-AutoDeployTrigger-60319ff4-9c0b-4643-bd81-e9ef4d9b1843.yml'
+
+  # Allow manual trigger 
+  workflow_dispatch:
+      
+jobs:
+  build-and-deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout to the branch
+        uses: actions/checkout@v2
+
+      - name: Azure Login
+        uses: azure/login@v1
+        with:
+          creds: ${{ secrets.DEMOLLYACAWSCACD_AZURE_CREDENTIALS }}
+
+      - name: Build and push container image to registry
+        uses: azure/container-apps-deploy-action@v2
+        with:
+          appSourcePath: ${{ github.workspace }}
+          _dockerfilePathKey_: _dockerfilePath_
+          registryUrl: demollyacawsacr.azurecr.io
+          registryUsername: ${{ secrets.DEMOLLYACAWSCACD_REGISTRY_USERNAME }}
+          registryPassword: ${{ secrets.DEMOLLYACAWSCACD_REGISTRY_PASSWORD }}
+          containerAppName: demo-lly-acaws-ca-cd
+          resourceGroup: demo-lly-acaws-rg
+          imageToBuild: demollyacawsacr.azurecr.io/demo-lly-acaws-ca-cd:${{ github.sha }}
+          
+            
+
+     
+
